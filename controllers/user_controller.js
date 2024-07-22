@@ -90,7 +90,8 @@ const login = asyncHandler(async (req, res, next) => {
                 200,
                 {
                     refreshToken: loggedInUser.refreshToken,
-                    isAuthenticated: true
+                    isAuthenticated: true,
+                    loggedUser:loggedInUser
                 },
                 "User logged In Successfully"
             )
@@ -124,7 +125,8 @@ const login = asyncHandler(async (req, res, next) => {
                     200,
                     {
                         refreshToken: loggedInUser.refreshToken,
-                        isAuthenticated: true
+                        isAuthenticated: true,
+                        loggedUser:loggedInUser
                     },
                     "User logged In Successfully"
                 )
@@ -147,7 +149,8 @@ const login = asyncHandler(async (req, res, next) => {
                 200,
                 {
                     refreshToken: loggedInUser.refreshToken,
-                    isAuthenticated: true
+                    isAuthenticated: true,
+                    loggedUser:loggedInUser
                 },
                 "User logged In Successfully"
             )
@@ -460,7 +463,7 @@ const forgetPasswordChangeApi = asyncHandler(async (req, res) => {
         process.env.PASSWORD_CHANGE)
 
     if (isVerifiedToken.otpCode !== otpCode) {
-        return res.status(400).json(new ErrorHandler(400, "Invalid PassWord Change Code"))
+        return res.status(400).json(new ApiError(400, "Invalid PassWord Change Code"))
     }
     const { id } = isVerifiedToken;
     const user = await userModel.findById(id);
@@ -470,6 +473,6 @@ const forgetPasswordChangeApi = asyncHandler(async (req, res) => {
         httpOnly: true,
         secure: false
     }
-    res.status(201).clearCookie("forgetPassword",options).json(new ApiResponse(201, {}, "Password Change successfully"));
+    res.status(201).clearCookie("forgetPasswordToken",options).json(new ApiResponse(201, {}, "Password Change successfully"));
 })
 export { makeShippingAddressDefault,socialAuth,forgetPasswordChangeApi, forgetPasswordOtpGenerate, makeBillingAddressDefault, getSingleAddressById, getAllUserAddresses, updateAddressById, deleteAddressById, register, login, logout, accessTokenReGenerate, getCurrentUser, changeCurrentPassword, updateUserAddress, updateUser }
