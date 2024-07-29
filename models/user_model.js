@@ -24,8 +24,12 @@ const userSchema = new mongoose.Schema( {
     refreshToken:{
         type:String,
     },
+    roles:{
+        type:String,
+        default :"user"
+    },
     addresses: [ { type: Schema.Types.ObjectId, ref: 'addressModel'}],
-    whishlists: [ { type: Schema.Types.ObjectId, ref: 'Product'}],
+    whishlists: [ { type: Schema.Types.ObjectId, ref: 'productModel'}],
     orders: [ { type: Schema.Types.ObjectId, ref: 'orderModel'}],
     reviews: [ { type: Schema.Types.ObjectId, ref: 'reviewModel'}],
 }, { timestamps: true } );

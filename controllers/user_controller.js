@@ -9,7 +9,6 @@ import sendEmail from "../utils/sendMail.js"
 const generateAccessAndRefereshTokens = async (userId) => {
     try {
         const user = await userModel.findById(userId.toString());
-        // console.log(user);
         const accessToken = user.generateAccessToken();
         const refreshToken = user.generateRefreshToken();
         user.refreshToken = refreshToken
@@ -84,7 +83,7 @@ const login = asyncHandler(async (req, res, next) => {
     return res
         .status(200)
         .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
+        .cookie("refreshToken", refreshToken, {httpOnly:false,secure:false})
         .json(
             new ApiResponse(
                 200,
@@ -102,7 +101,6 @@ const login = asyncHandler(async (req, res, next) => {
  const socialAuth = asyncHandler(async (req, res, next) => {
 
     const { email, firstName, lastName } = req.body;
-    console.log(email,firstName,lastName)
     const isUserExist = await userModel.findOne({ email });
     if (!isUserExist) {
         const newUser = await userModel.create({
@@ -119,7 +117,7 @@ const login = asyncHandler(async (req, res, next) => {
         return res
             .status(200)
             .cookie("accessToken", accessToken, options)
-            .cookie("refreshToken", refreshToken, options)
+            .cookie("refreshToken", refreshToken, {httpOnly:false,secure:false})
             .json(
                 new ApiResponse(
                     200,
@@ -143,7 +141,7 @@ const login = asyncHandler(async (req, res, next) => {
     return res
         .status(200)
         .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
+        .cookie("refreshToken", refreshToken, {httpOnly:false,secure:false})
         .json(
             new ApiResponse(
                 200,
@@ -173,7 +171,6 @@ const logout = asyncHandler(async (req, res) => {
             new: true
         }
     )
-
     const options = {
         httpOnly: true,
         secure: false
@@ -182,31 +179,28 @@ const logout = asyncHandler(async (req, res) => {
     return res
         .status(200)
         .clearCookie("accessToken", options)
-        .clearCookie("refreshToken", options)
+        .clearCookie("refreshToken", {httpOnly:false,secure:false})
         .json(new ApiResponse(200, {}, "User logged Out"))
 })
-
-
-
-
 //  access token regenerate
-const accessTokenReGenerate = asyncHandler(async (req, res, next) => {
-    const { tokenRerfresh } = req.body;
-    const token = tokenRerfresh || req.cookies.refreshToken;
-    if (!token) {
+const accessTokenReGenerate = asyncHandler(async (req, res) => {
+    const { tokenRefresh } = req.body;
+    const token =  req.cookies.refreshToken || tokenRefresh;
+     if (!token) {
         return res.status(400).json(new ApiError(401, "Unauthorised Access", "Unauthorised Access"));
     }
-
     const decodedToken = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+     if(!decodedToken){
+        res.status(403).json(new ApiError(403,"Session Expired","Session Expired"))
+        }
     const user = await userModel.findById(decodedToken?._id);
     if (!user) {
         throw new ApiError(401, "Invalid refresh Token");
     }
-    if (user.refreshToken !== token) {
-        throw new ApiError(401, "Token Invalid");
-    }
+    // if (user.refreshToken !== token) {
+    //     throw new ApiError(401, "Token Invalid");
+    // }
     const { accessToken, refreshToken } = await generateAccessAndRefereshTokens(decodedToken?._id);
-    console.log(accessToken, refreshToken)
     const options = {
         httpOnly: true,
         secure: false
@@ -214,11 +208,11 @@ const accessTokenReGenerate = asyncHandler(async (req, res, next) => {
     return res
         .status(200)
         .cookie("accessToken", accessToken, options)
-        .cookie("refreshToken", refreshToken, options)
+        .cookie("refreshToken", refreshToken, {httpOnly:false,secure:false})
         .json(
             new ApiResponse(
                 200,
-                {},
+                {refreshToken},
                 "AccessToken Refresh Successfully"
             )
         )

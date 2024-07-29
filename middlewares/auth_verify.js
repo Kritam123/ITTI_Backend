@@ -8,9 +8,10 @@ import { userModel } from "../models/user_model.js";
 
 export const verifyJWT = asyncHandler(async(req,_,next)=>{
     try {
+        
         const token = req.cookies.accessToken || req.header("Authorization")?.replace("Bearer ", "");
         if(!token ){
-            throw new ApiError(401,"Unauthorised access");
+         throw new ApiError(401,"Unauthorised access");
         }
         const decodedToken = jwt.verify(token,process.env.ACCESS_TOKEN_SECRET);
         const user = await userModel.findById(decodedToken?._id).select("-password -refreshToken");
@@ -21,5 +22,18 @@ export const verifyJWT = asyncHandler(async(req,_,next)=>{
         next();
     }catch (error){
             throw new ApiError(401,error.message || "Invalid access token")
+    }
+})
+
+
+export const userRoles = asyncHandler(async(req,res,next)=>{
+    try {
+        const currentUserRoles = req.user?.roles;
+        if(currentUserRoles !== "admin"){
+        return  res.status(401).json(new ApiError(401,"UnAuthorised Access!" || "Something went Wrong","UnAuthorised Access!"))
+        }
+        next();
+    } catch (error) {
+      console.log(error)
     }
 })
