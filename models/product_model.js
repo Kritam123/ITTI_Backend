@@ -20,7 +20,10 @@ const productSchema = new mongoose.Schema({
     discountPrice: {
         type: String,
     },
-
+    slug_name:{
+        type:String,
+        required:true
+    },
     productImages: [
         {
             smallImgUrl: { type: String, required: true },
