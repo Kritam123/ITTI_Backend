@@ -77,6 +77,7 @@ const reviewSchema = new Schema({
     email: { type: String, required: true },
     userId: {
         type: Schema.Types.ObjectId,
+        ref:"userModel",
         required: true
     },
     reviewText: { type: String, required: true },

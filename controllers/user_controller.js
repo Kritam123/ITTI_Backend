@@ -191,7 +191,8 @@ const accessTokenReGenerate = asyncHandler(async (req, res) => {
     }
     const decodedToken = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
      if(!decodedToken){
-        res.status(403).json(new ApiError(403,"Session Expired","Session Expired"))
+        res.status(403).clearCookie("accessToken", options)
+        .clearCookie("refreshToken", {httpOnly:false,secure:false}).json(new ApiError(403,"Session Expired","Session Expired"))
         }
     const user = await userModel.findById(decodedToken?._id);
     if (!user) {
